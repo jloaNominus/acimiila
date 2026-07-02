@@ -103,5 +103,3 @@ Este submódulo contiene información básica operativa para el control de recur
 `Cta`  Controla todos los estados de cuenta de alumnos, entidades, proveedores y docentes. 
 `Tes`  Controla todo el flujo de información operativa de cobros (CxC - alumnos generalmente), y pagos (CxP - docentes principalmente).
 `Rch`  Controla el flujo de información de recursos humanos, base para la liquidación periódica de nómina, bonos, primas, liquidaciones, etc.
-
-
