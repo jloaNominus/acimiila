@@ -15,43 +15,48 @@ spl_autoload_register(function ($class_name) {
 header("Content-Type: application/json; charset=UTF-8");
 
 use AciMiila\Core\Database;
+use AciMiila\Core\Router;
 use AciMiila\Repositories\PerRepository;
 
-// 1. Inicializar conexión
+// 1. Inicializar Core
 $database = new Database();
 $db = $database->getConnection();
+$router = new Router();
 
-// 2. Instanciar Repositorio
+// 2. Resolver Ruta
+$path = $router->resolve();
 $perRepo = new PerRepository($db);
+$data = null;
 
 /** 
- * Endpoints: 
- * 1. GET /index.php?id=17          -> Persona completa (Detalle)
- * 2. GET /index.php?email=gmail    -> Lista por búsqueda de email
- * 3. GET /index.php                -> Lista general
+ * Enrutamiento basado en contrato:
+ * GET /persona/byEmail?email=abcd
  */
-$id = $_GET['id'] ?? null;
-$emailSearch = $_GET['email'] ?? null;
+switch ($path) {
+    case 'persona/byEmail':
+        $email = $_GET['email'] ?? null;
+        if ($email) {
+            $data = $perRepo->searchByEmail($email);
+        }
+        break;
 
-if ($id) {
-    // Caso 1: Detalle individual
-    $data = $perRepo->getById($id);
-} elseif ($emailSearch) {
-    // Caso 2: Búsqueda por email
-    $data = $perRepo->searchByEmail($emailSearch);
-} else {
-    // Caso 3: Listado general
-    $data = $perRepo->getAll();
+    case 'persona':
+        $id = $_GET['id'] ?? null;
+        if ($id) {
+            $data = $perRepo->getById($id);
+        } else {
+            $data = $perRepo->getAll();
+        }
+        break;
+
+    default:
+        $data = ["error" => "Ruta no encontrada", "path" => $path];
+        http_response_code(404);
+        break;
 }
 
-$response = [
+echo json_encode([
     "status" => "success",
-    "modulo" => "Per",
-    "query" => [
-        "id" => $id,
-        "email" => $emailSearch
-    ],
+    "path" => $path,
     "data" => $data
-];
-
-echo json_encode($response);
+]);
